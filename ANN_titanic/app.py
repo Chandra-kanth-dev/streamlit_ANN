@@ -1,5 +1,7 @@
 # ============================================
 # TITANIC SURVIVAL PREDICTION APP
+# WITHOUT TENSORFLOW
+# USING MANUAL LOGIC
 # ============================================
 
 # ============================================
@@ -7,7 +9,6 @@
 # ============================================
 
 import streamlit as st
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -25,17 +26,8 @@ st.set_page_config(
 )
 
 # ============================================
-# LOAD MODEL
-# ============================================
-
-model = tf.keras.models.load_model("titanic_ann_model.h5")
-
-# ============================================
 # CREATE SCALER
 # ============================================
-
-# Training dataset min/max assumptions
-# Replace with actual training values if available
 
 scaler = MinMaxScaler()
 
@@ -45,6 +37,36 @@ sample_data = np.array([
 ])
 
 scaler.fit(sample_data)
+
+# ============================================
+# SIGMOID FUNCTION
+# ============================================
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# ============================================
+# MANUAL WEIGHTS
+# ============================================
+
+# Input -> Hidden
+w_input_hidden = np.array([
+    [0.11, 0.21],
+    [0.14, 0.24],
+    [0.17, 0.27]
+])
+
+# Hidden Bias
+b_hidden = np.array([0.1, 0.1])
+
+# Hidden -> Output
+w_hidden_output = np.array([
+    [0.31],
+    [0.34]
+])
+
+# Output Bias
+b_output = 0.1
 
 # ============================================
 # HEADER SECTION
@@ -66,16 +88,16 @@ st.markdown("""
 This application predicts whether a passenger would survive during the Titanic disaster using:
 
 - Artificial Neural Networks (ANN)
-- TensorFlow Deep Learning Model
-- Passenger Information
+- Manual Forward Propagation
+- Sigmoid Activation Function
 - Real-time Prediction System
 
-The model is trained using:
+The prediction is based on:
 - Passenger Class
 - Age
 - Fare
 
-The trained model is deployed using Streamlit.
+This version works WITHOUT TensorFlow.
 ---
 """)
 
@@ -128,12 +150,20 @@ if st.button("Predict Survival"):
     input_scaled = scaler.transform(input_data)
 
     # ========================================
-    # PREDICTION
+    # FORWARD PROPAGATION
     # ========================================
 
-    prediction = model.predict(input_scaled)
+    # Hidden Layer
+    hidden_input = np.dot(input_scaled, w_input_hidden) + b_hidden
 
-    probability = float(prediction[0][0])
+    hidden_output = sigmoid(hidden_input)
+
+    # Output Layer
+    final_input = np.dot(hidden_output, w_hidden_output) + b_output
+
+    final_output = sigmoid(final_input)
+
+    probability = float(final_output[0][0])
 
     # ========================================
     # OUTPUT SECTION
@@ -154,6 +184,7 @@ if st.button("Predict Survival"):
 
     # Survival Probability
     with col2:
+
         st.metric(
             label="Survival Probability",
             value=f"{probability*100:.2f}%"
@@ -184,6 +215,7 @@ if st.button("Predict Survival"):
         "Probability": [survive_prob, not_survive_prob]
     })
 
+    # Bar Chart
     st.bar_chart(
         chart_data.set_index("Category")
     )
@@ -202,11 +234,27 @@ if st.button("Predict Survival"):
 
     st.pyplot(fig)
 
+    # ========================================
+    # SHOW INTERNAL CALCULATIONS
+    # ========================================
+
+    st.markdown("---")
+    st.markdown("## 🧠 Neural Network Calculations")
+
+    st.write("### Hidden Layer Input")
+    st.write(hidden_input)
+
+    st.write("### Hidden Layer Output")
+    st.write(hidden_output)
+
+    st.write("### Final Output")
+    st.write(final_output)
+
 # ============================================
 # FOOTER
 # ============================================
 
 st.markdown("""
 ---
-### Developed using TensorFlow + Streamlit
+### Developed using Streamlit + Manual ANN Logic
 """)
