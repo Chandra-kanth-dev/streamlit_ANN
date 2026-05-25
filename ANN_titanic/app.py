@@ -256,5 +256,5 @@ if st.button("Predict Survival"):
 
 st.markdown("""
 ---
-### Developed using Streamlit + Manual ANN Logic
+### Developed using Streamlit +  ANN Logic
 """)
